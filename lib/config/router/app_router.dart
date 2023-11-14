@@ -1,4 +1,4 @@
-import 'package:discotec_flutter/presentation/screens/auth_screen.dart';
+import 'package:discotec_flutter/presentation/screens/auth/auth_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
