@@ -38,23 +38,11 @@ class _AuthCardState extends State<AuthCard> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                SlideSwitcher(
-                  onSelect: changeView,
-                  containerHeight: 50,
-                  containerWight: 200,
-                  containerColor: colors.background,
-                  slidersColors: [
-                    colors.primaryContainer,
-                  ],
-                  children: const [
-                    Text('Login'),
-                    Text('SignUp'),
-                  ],
-                ),
+                _AuthSlideSwitcher(onSelect: changeView),
                 const SizedBox(height: 8),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 300),
-                  child: login ? LoginForm(colors: colors) : const SignUpForm(),
+                  child: login ? const _LoginForm() : const _SignUpForm(),
                 ),
               ],
             ),
@@ -73,10 +61,37 @@ class _AuthCardState extends State<AuthCard> {
   }
 }
 
-class SignUpForm extends StatelessWidget {
-  const SignUpForm({
-    super.key,
+class _AuthSlideSwitcher extends StatelessWidget {
+  final Function(int) onSelect;
+
+  const _AuthSlideSwitcher({
+    required this.onSelect,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return SlideSwitcher(
+      onSelect: onSelect,
+      containerHeight: 50,
+      containerWight: 200,
+      containerColor: colors.background,
+      slidersColors: [
+        colors.primaryContainer,
+      ],
+      children: const [
+        Text('Login'),
+        Text('SignUp'),
+      ],
+    );
+  }
+}
+
+
+
+class _SignUpForm extends StatelessWidget {
+  const _SignUpForm();
 
   @override
   Widget build(BuildContext context) {
@@ -109,13 +124,8 @@ class SignUpForm extends StatelessWidget {
   }
 }
 
-class LoginForm extends StatelessWidget {
-  const LoginForm({
-    super.key,
-    required this.colors,
-  });
-
-  final ColorScheme colors;
+class _LoginForm extends StatelessWidget {
+  const _LoginForm();
 
   @override
   Widget build(BuildContext context) {
