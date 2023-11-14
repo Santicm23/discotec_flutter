@@ -1,3 +1,4 @@
+import 'package:discotec_flutter/config/router/app_router.dart';
 import 'package:flutter/material.dart';
 
 import 'package:discotec_flutter/config/theme/app_theme.dart';
@@ -12,10 +13,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       theme: AppTheme().themeData,
       debugShowCheckedModeBanner: false,
-      home: const Placeholder(),
+      routerConfig: appRouter,
     );
   }
 }
