@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:slide_switcher/slide_switcher.dart';
@@ -23,6 +24,8 @@ class _AuthCardState extends State<AuthCard> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    TextEditingController emailLoginController = TextEditingController();
+    TextEditingController passwordLoginController = TextEditingController();
 
     return Column(
       children: [
@@ -42,7 +45,12 @@ class _AuthCardState extends State<AuthCard> {
                 const SizedBox(height: 8),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 300),
-                  child: login ? const _LoginForm() : const _SignUpForm(),
+                  child: login
+                      ? _LoginForm(
+                          emailController: emailLoginController,
+                          passwordController: passwordLoginController,
+                        )
+                      : const _SignUpForm(),
                 ),
               ],
             ),
@@ -53,8 +61,22 @@ class _AuthCardState extends State<AuthCard> {
           style: ElevatedButton.styleFrom(
             backgroundColor: colors.primaryContainer,
           ),
-          onPressed: () {},
-          child: Text(login ? 'Login' : 'SignUp', style: TextStyle(color: colors.secondary)),
+          onPressed: () async {
+            if (login) {
+              FirebaseAuth auth = FirebaseAuth.instance;
+              try {
+                await auth.signInWithEmailAndPassword(email: emailLoginController.text, password: passwordLoginController.text);
+              } on FirebaseAuthException catch (e) {
+                if (e.code == 'user-not-found') {
+                  
+                } else if (e.code == 'wrong-password') {
+                  
+                }
+              }
+            }
+          },
+          child: Text(login ? 'Login' : 'SignUp',
+              style: TextStyle(color: colors.secondary)),
         ),
       ],
     );
@@ -87,8 +109,6 @@ class _AuthSlideSwitcher extends StatelessWidget {
     );
   }
 }
-
-
 
 class _SignUpForm extends StatelessWidget {
   const _SignUpForm();
@@ -125,7 +145,13 @@ class _SignUpForm extends StatelessWidget {
 }
 
 class _LoginForm extends StatelessWidget {
-  const _LoginForm();
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+
+  const _LoginForm({
+    required this.emailController,
+    required this.passwordController,
+  });
 
   @override
   Widget build(BuildContext context) {

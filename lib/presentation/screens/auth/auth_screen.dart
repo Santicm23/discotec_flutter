@@ -1,8 +1,10 @@
-import 'package:discotec_flutter/presentation/screens/auth/widgets/auth_card_widget.dart';
-import 'package:discotec_flutter/presentation/screens/auth/widgets/custom_title_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:local_auth/local_auth.dart';
+
+import 'package:discotec_flutter/presentation/screens/auth/widgets/auth_card_widget.dart';
+import 'package:discotec_flutter/presentation/screens/auth/widgets/custom_title_widget.dart';
 
 class AuthScreen extends StatelessWidget {
   static const routeName = '/auth';
