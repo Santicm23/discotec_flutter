@@ -5,6 +5,7 @@ import 'package:local_auth/local_auth.dart';
 
 import 'package:discotec_flutter/presentation/screens/auth/widgets/auth_card_widget.dart';
 import 'package:discotec_flutter/presentation/screens/auth/widgets/custom_title_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthScreen extends StatelessWidget {
   static const routeName = '/auth';
@@ -24,6 +25,20 @@ class _AuthView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void createDialog(String msg) {
+    showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: const Text('Error'),
+        content: Text(msg),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Ok'),
+          ),
+        ],
+      );
+    },);
+  }
     return Scaffold(
       body: const Center(
         child: SingleChildScrollView(
@@ -39,24 +54,20 @@ class _AuthView extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          if (prefs.getBool('isLogged') ?? false) {
+            createDialog('Ya se encuentra logueado');
+            return;
+          }
           try {
             final bool didAuthenticate = await _auth.authenticate(
                 localizedReason: 'Please authenticate to show account balance',
                 options: const AuthenticationOptions(useErrorDialogs: false));
+            if (didAuthenticate) {
+              // TODO
+            }
           } on PlatformException catch (e) {
-            // ignore: use_build_context_synchronously
-            showDialog(context: context, builder: (context) {
-              return AlertDialog(
-                title: const Text('Error'),
-                content: Text(e.message ?? ''),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Ok'),
-                  ),
-                ],
-              );
-            },);
+            createDialog(e.message ?? 'Error desconocido');
           }
         },
         child: const Icon(Icons.fingerprint),

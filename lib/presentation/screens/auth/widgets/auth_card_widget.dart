@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:slide_switcher/slide_switcher.dart';
 
@@ -13,12 +14,53 @@ class AuthCard extends StatefulWidget {
 }
 
 class _AuthCardState extends State<AuthCard> {
-  bool login = true;
+  bool loginOption = true;
 
   void changeView(int index) {
     setState(() {
-      login = index == 0;
+      loginOption = index == 0;
     });
+  }
+
+  Future<void> savePreferences(String email, String password) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('email', email);
+    prefs.setString('password', password);
+    prefs.setBool('isLogged', true);
+  }
+
+  void createDialog(context, String msg) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(msg),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> loginFunction(context, FirebaseAuth auth, String email, String password) async {
+    try {
+      await auth.signInWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException {
+      createDialog(context, 'Usuario o contraseña incorrectos');
+    }
+  }
+
+  Future<void> signUpFunction(context, FirebaseAuth auth, String email, String password) async {
+    try {
+      await auth.createUserWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException {
+      createDialog(context, 'Error al crear el usuario');
+    }
   }
 
   @override
@@ -26,12 +68,14 @@ class _AuthCardState extends State<AuthCard> {
     final colors = Theme.of(context).colorScheme;
     TextEditingController emailLoginController = TextEditingController();
     TextEditingController passwordLoginController = TextEditingController();
+    TextEditingController emailSignUpController = TextEditingController();
+    TextEditingController passwordSignUpController = TextEditingController();
 
     return Column(
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          height: login ? 240 : 380,
+          height: loginOption ? 240 : 380,
           decoration: BoxDecoration(
             color: colors.secondaryContainer,
             borderRadius: BorderRadius.circular(16),
@@ -45,7 +89,7 @@ class _AuthCardState extends State<AuthCard> {
                 const SizedBox(height: 8),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 300),
-                  child: login
+                  child: loginOption
                       ? _LoginForm(
                           emailController: emailLoginController,
                           passwordController: passwordLoginController,
@@ -61,21 +105,23 @@ class _AuthCardState extends State<AuthCard> {
           style: ElevatedButton.styleFrom(
             backgroundColor: colors.primaryContainer,
           ),
-          onPressed: () async {
-            if (login) {
-              FirebaseAuth auth = FirebaseAuth.instance;
+          onPressed: () {
+            FirebaseAuth auth = FirebaseAuth.instance;
+            if (loginOption) {
               try {
-                await auth.signInWithEmailAndPassword(email: emailLoginController.text, password: passwordLoginController.text);
+                loginFunction(context, auth, emailLoginController.text,
+                    passwordLoginController.text);
               } on FirebaseAuthException catch (e) {
-                if (e.code == 'user-not-found') {
-                  
-                } else if (e.code == 'wrong-password') {
-                  
+                if (e.code == 'user-not-found' || e.code == 'invalid-email') {
+                  createDialog(context, 'Usuario o contraseña incorrectos');
                 }
               }
+            } else {
+              signUpFunction(context, auth, emailSignUpController.text,
+                  passwordSignUpController.text);
             }
           },
-          child: Text(login ? 'Login' : 'SignUp',
+          child: Text(loginOption ? 'Login' : 'SignUp',
               style: TextStyle(color: colors.secondary)),
         ),
       ],
